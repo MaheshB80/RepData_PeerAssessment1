@@ -9,12 +9,34 @@ output:
 
 ## Loading and preprocessing the data
 
-```{r, echo=TRUE}
+
+```r
 library("dplyr")
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 library("ggplot2")
 ```
 
-```{r, echo=TRUE}
+
+```r
 unzip("activity.zip")
 activitydata <- read.csv("activity.csv", header=TRUE)
 ```
@@ -24,116 +46,120 @@ activitydata <- read.csv("activity.csv", header=TRUE)
 
 ## What is mean total number of steps taken per day?
 
-```{r, echo=TRUE}
+
+```r
 activitycomplete <- na.omit(activitydata)
 stepdata <- activitycomplete %>% group_by(date) %>% summarise(steps=sum(steps), .groups='drop')
-
 ```
 
 
 
 ## Histogram for total number of steps taken per day
-```{r, echo=TRUE}
-qplot(steps,data=stepdata, binwidth=1000, xlab="Total steps per day", ylab="Frequency", main="Total No. of Steps taken per day")
 
+```r
+qplot(steps,data=stepdata, binwidth=1000, xlab="Total steps per day", ylab="Frequency", main="Total No. of Steps taken per day")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 
 
 
 
 ## Mean & Median of total number of steps taken per day
-```{r, echo=TRUE}
+
+```r
 stepmean <- mean(stepdata$steps)
 stepmedian <- median(stepdata$steps)
-
 ```
-* Mean : `r stepmean`
-* Median : `r stepmedian`
+* Mean : 1.0766189\times 10^{4}
+* Median : 10765
 
 
 
 
 ## What is the average daily activity pattern?
 
-```{r, echo=TRUE}
-activityinterval <- activitydata %>% group_by(interval) %>% summarise(steps=mean(steps,na.rm=TRUE), .groups='drop')
 
+```r
+activityinterval <- activitydata %>% group_by(interval) %>% summarise(steps=mean(steps,na.rm=TRUE), .groups='drop')
 ```
 
 #### Time series plot
-```{r, echo=TRUE}
-ggplot(activityinterval, aes(interval,steps)) + geom_line() + ggtitle("Average Daily Activity Pattern") 
 
+```r
+ggplot(activityinterval, aes(interval,steps)) + geom_line() + ggtitle("Average Daily Activity Pattern") 
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
 
 ### 5- min interval contains maximum No. of steps
-```{r, echo=TRUE}
-fivemin <-activityinterval[which.max(activityinterval$steps),]
 
+```r
+fivemin <-activityinterval[which.max(activityinterval$steps),]
 ```
-* 5 Min Interval : `r fivemin`
+* 5 Min Interval : 835, 206.1698113
 
 
 
 ## Imputing missing values
 #### Total number of missing values in the dataset
-```{r, echo=TRUE}
-missingvalues <- length(which(is.na(activitydata$steps)))
 
+```r
+missingvalues <- length(which(is.na(activitydata$steps)))
 ```
-* Number of missing values : `r missingvalues`
+* Number of missing values : 2304
 
 
 #### Fill data & create new dataset with no missing values
-```{r, echo=TRUE}
+
+```r
 names(activityinterval)[2] <- "meansteps"
 activityimpute <- merge(activitydata, activityinterval)
 activityimpute$steps[is.na(activityimpute$steps)] <- activityimpute$meansteps[is.na(activityimpute$steps)]
 
 activitydayimpute <- activityimpute %>% group_by(date) %>% summarise(steps=sum(steps), .groups='drop')
-
 ```
 
 
 #### Histogram for total number of steps taken per day with new dataset
-```{r, echo=TRUE}
-qplot(steps, data=activitydayimpute, binwidth=1000, xlab="Total steps per day ", ylab="Frequency", main="Total No. of Steps Taken Each Day")
 
+```r
+qplot(steps, data=activitydayimpute, binwidth=1000, xlab="Total steps per day ", ylab="Frequency", main="Total No. of Steps Taken Each Day")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
 
 
 #### Mean & Median of total number of steps taken per day with new dataset
-```{r, echo=TRUE}
+
+```r
 newmean <- mean(activitydayimpute$steps)
 newmedian <- median(activitydayimpute$steps)
-
 ```
-* Mean : `r newmean`
-* Median : `r newmedian`
+* Mean : 1.0766189\times 10^{4}
+* Median : 1.0766189\times 10^{4}
 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
 #### Create factor variable & making levels for weedays & weekend
 
-```{r, echo=TRUE}
+
+```r
 activityimpute$day <- weekdays(as.Date(activityimpute$date))
 activityimpute$weekend <- as.factor(activityimpute$day=="Saturday" | activityimpute$day=="Sunday")
 levels(activityimpute$weekend) <- c("Weekday", "Weekend")
 activityday <- activityimpute %>% group_by(interval,weekend) %>% summarise(steps=mean(steps), .groups='drop')
-
 ```
 
 
 #### Time series plot for pattern between weekdays & weekends
-```{r, echo=TRUE}
+
+```r
 qplot(interval,steps, data=activityday, geom="line", facets=weekend~., xlab="5 Min Intervals", ylab="Steps", main="Step pattern between Weekdays & Weekend")
-
 ```
 
-```{r, include=FALSE}
-   # add this chunk to end of mycode.rmd
-   file.rename(from="scripts/PA1_template.md", 
-               to="README1.md")
-```
+![](PA1_template_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
+
+
